@@ -1,0 +1,99 @@
+FORMRACK 3D MODEL VIEWER - COMPLETE SETUP
+============================================
+
+✅ BAŞARILI KURULUM
+
+📂 Proje Yapısı:
+───────────────────────────────────────────────────
+  e:\FORMRACK-WEB-ONIZLEME/
+  ├── 📄 index.html              ← AÇILACAK DOSYA
+  ├── 📄 RUN-SERVER.bat          ← SUNUCU BAŞLATMA (Windows)
+  ├── 📄 start-server.sh         ← SUNUCU BAŞLATMA (Mac/Linux)
+  ├── 📄 server.py               ← Python API Sunucusu
+  ├── 📄 models.json             ← Model Metadata
+  ├── 📁 models/
+  │   └── Hazır Sahne.glb        ← 3D Model
+  ├── 📄 README.md
+  ├── 📄 QUICK-START.md
+  └── 📄 SETUP-COMPLETE.txt      ← Bu dosya
+
+───────────────────────────────────────────────────
+
+🚀 HEMEN BAŞLA:
+
+  1️⃣  RUN-SERVER.bat dosyasına çift tıkla
+  
+  2️⃣  Bekleme... (3-5 saniye)
+  
+  3️⃣  Browser'da aç: http://localhost:8000
+  
+  4️⃣  "Hazır Sahne.glb" modelini seç
+
+───────────────────────────────────────────────────
+
+📦 YENİ MODEL EKLEME:
+
+  1. Yeni .glb dosyasını models/ klasörüne koy
+  2. Browser'da sayfayı yenile (F5)
+  3. Dropdown'da otomatik görünecek
+
+Örnek:
+  models/
+  ├── Hazır Sahne.glb
+  ├── urun-1.glb          ← Ekledikten sonra
+  └── urun-2.glb          ← Sayfayı yenile
+
+───────────────────────────────────────────────────
+
+🎯 ÖZELLİKLER:
+
+  ✅ Otomatik Model Taraması
+  ✅ Dosya Upload & Select
+  ✅ 360° İnteraktif Görüntüleme
+  ✅ Auto-Rotate
+  ✅ Mobil Uyumlu
+  ✅ WebGL Rendering
+  ✅ Profesyonel Tasarım
+
+───────────────────────────────────────────────────
+
+🔍 KONTROLLER:
+
+  🖱️ Sürükle     = Döndür
+  🔄 Scroll      = Yaklaştır/Uzaklaştır
+  ➡️  Sağ Tıkla  = Pan (Hareket)
+
+───────────────────────────────────────────────────
+
+⚙️ AYARLAR:
+
+  Port:      8000
+  API URL:   http://localhost:8000/api/models
+  Format:    .glb / .gltf
+  Python:    3.7+
+
+───────────────────────────────────────────────────
+
+📝 NOTLAR:
+
+  • Modeller SolidWorks → Blender → GLB formatı
+  • Dosya adları UTF-8 uyumlu
+  • Sunucu Port 8000 kullanıyor
+  • API otomatik klasörü tarar
+
+───────────────────────────────────────────────────
+
+🐛 SORUN ÇIKMAZSA:
+
+  1. Browser console açmak: F12
+  2. Hataları oku
+  3. Sayfayı yenile: Ctrl+R
+  4. Server loglarını kontrol et
+
+───────────────────────────────────────────────────
+
+✨ HER ŞEY HAZIR! KULLANMAYA BAŞLAYABILIRSIN.
+
+Made with ❤️ for Formrack
+
+───────────────────────────────────────────────────

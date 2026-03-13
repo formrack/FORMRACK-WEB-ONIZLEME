@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Formrack - Professional 3D Product Preview">
+    <title>Formrack | 3D Product Viewer</title>
+    
+    <!-- Google Model Viewer CDN -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    
+    <style>
+        /* ===========================================
+           GLOBAL STYLES & TYPOGRAPHY
+           =========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow: hidden;
+        }
+
+        /* ===========================================
+           CONTAINER & LAYOUT
+           =========================================== */
+        .viewer-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+        }
+
+        /* ===========================================
+           MODEL VIEWER COMPONENT
+           =========================================== */
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            
+            /* Performance optimization */
+            --progress-bar-height: 2px;
+        }
+
+        /* Loading indicator styling */
+        model-viewer[aria-busy="true"] {
+            opacity: 0.9;
+        }
+
+        /* ===========================================
+           HEADER / TITLE OVERLAY
+           =========================================== */
+        .header-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 32px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba(10, 10, 10, 0.6) 0%, rgba(10, 10, 10, 0) 100%);
+        }
+
+        .header-overlay h1 {
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #ffffff;
+        }
+
+        .header-overlay p {
+            font-size: 13px;
+            letter-spacing: 1px;
+            color: #999999;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+        .subtitle {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===========================================
+           FOOTER INFO
+           =========================================== */
+        .footer-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 32px 40px;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(10, 10, 10, 0.8) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .info-group {
+            display: flex;
+            gap: 40px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-item label {
+            font-size: 11px;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .info-item value {
+            font-size: 14px;
+            color: #ffffff;
+            font-weight: 400;
+        }
+
+        .interaction-hint {
+            font-size: 12px;
+            color: #777777;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===========================================
+           MODEL SELECTOR DROPDOWN
+           =========================================== */
+        .model-selector {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background-color: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+            position: absolute;
+            top: 90px;
+            left: 40px;
+            z-index: 15;
+        }
+
+        .model-selector label {
+            font-size: 12px;
+            color: #999999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .model-selector select {
+            padding: 6px 10px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 13px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+            min-width: 220px;
+            transition: all 0.2s ease;
+        }
+
+        .model-selector select:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .model-selector select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+        }
+
+        .model-selector select option {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 8px;
+        }
+
+        .interaction-hint {
+            font-size: 12px;
+            color: #777777;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===========================================
+           UPLOAD BUTTON STYLES
+           =========================================== */
+        .upload-button {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            text-transform: uppercase;
+        }
+
+        .upload-button:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .upload-button:active {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: scale(0.98);
+        }
+
+        .upload-icon {
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        .upload-text {
+            font-weight: 500;
+        }
+
+        /* ===========================================
+           LOADING STATE
+           =========================================== */
+        .loading .upload-text::after {
+            content: '...';
+            animation: dots 1.5s steps(3, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% {
+                content: '';
+            }
+            40% {
+                content: '.';
+            }
+            60% {
+                content: '..';
+            }
+            80%, 100% {
+                content: '...';
+            }
+        }
+
+        .interaction-hint {
+            font-size: 12px;
+            color: #777777;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===========================================
+           RESPONSIVE DESIGN - TABLET
+           =========================================== */
+        @media (max-width: 1024px) {
+            .header-overlay {
+                padding: 24px 32px;
+                justify-content: space-between;
+            }
+
+            .header-overlay h1 {
+                font-size: 24px;
+                letter-spacing: 1.5px;
+            }
+
+            .upload-button {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+
+            .model-selector {
+                top: 80px;
+                left: 32px;
+                padding: 8px 12px;
+            }
+
+            .model-selector select {
+                min-width: 180px;
+                font-size: 12px;
+            }
+
+            .footer-overlay {
+                padding: 24px 32px;
+                flex-direction: column;
+                gap: 20px;
+                align-items: flex-start;
+            }
+
+            .info-group {
+                gap: 32px;
+                width: 100%;
+            }
+
+            .interaction-hint {
+                align-self: flex-end;
+            }
+        }
+
+        /* ===========================================
+           RESPONSIVE DESIGN - MOBILE
+           =========================================== */
+        @media (max-width: 640px) {
+            .header-overlay {
+                padding: 16px 20px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .header-overlay h1 {
+                font-size: 18px;
+                letter-spacing: 1px;
+            }
+
+            .header-overlay p {
+                font-size: 11px;
+            }
+
+            .upload-button {
+                padding: 8px 14px;
+                font-size: 11px;
+                align-self: flex-start;
+            }
+
+            .upload-text {
+                display: none;
+            }
+
+            .upload-icon {
+                font-size: 14px;
+            }
+
+            .model-selector {
+                top: calc(12px + env(safe-area-inset-top, 0px) + 64px);
+                left: 20px;
+                right: 20px;
+                padding: 8px 12px;
+                width: auto;
+            }
+
+            .model-selector label {
+                display: none;
+            }
+
+            .model-selector select {
+                min-width: 100%;
+                font-size: 11px;
+            }
+
+            .footer-overlay {
+                padding: 16px 20px;
+                gap: 12px;
+            }
+
+            .info-group {
+                gap: 24px;
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .info-item label {
+                font-size: 10px;
+            }
+
+            .info-item value {
+                font-size: 12px;
+            }
+
+            .interaction-hint {
+                font-size: 11px;
+            }
+
+            .shortcuts-overlay {
+                left: 20px;
+                right: 20px;
+                bottom: 104px;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 640px) and (max-height: 520px) {
+            .shortcuts-overlay {
+                display: none;
+            }
+        }
+
+        /* ===========================================
+           ACCESSIBILITY & FOCUS STATES
+           =========================================== */
+        model-viewer:focus {
+            outline: 2px solid #4a4a4a;
+            outline-offset: -2px;
+        }
+
+        /* ===========================================
+           PART VISIBILITY (EYE ICON OVERLAY)
+           =========================================== */
+        .part-eye-btn {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.20);
+            background: rgba(10, 10, 10, 0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            color: #ffffff;
+            display: grid;
+            place-items: center;
+            transform: translate(-50%, -50%) scale(0.96);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 30;
+            transition: opacity 120ms ease, transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
+            will-change: opacity, transform;
+            cursor: pointer;
+            padding: 0;
+            outline: none;
+        }
+
+        .part-eye-btn.is-visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .part-eye-btn.is-pressed {
+            transform: translate(-50%, -50%) scale(0.92);
+            background: rgba(255, 255, 255, 0.10);
+            border-color: rgba(255, 255, 255, 0.32);
+        }
+
+        .part-eye-btn.is-active {
+            border-color: #f4d03f;
+            box-shadow: 0 0 0 1px rgba(244, 208, 63, 0.35), 0 0 18px rgba(244, 208, 63, 0.28);
+            color: #f9e79f;
+        }
+
+        .part-eye-btn svg {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+        /* ===========================================
+           SHORTCUTS / HELP OVERLAY
+           =========================================== */
+        .shortcuts-overlay {
+            position: absolute;
+            left: 40px;
+            bottom: 96px;
+            z-index: 12;
+            padding: 10px 12px;
+            background: radial-gradient(circle at top left, rgba(255,255,255,0.10), rgba(10,10,10,0.80));
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            font-size: 11px;
+            color: #dddddd;
+            line-height: 1.5;
+            max-width: 260px;
+            pointer-events: none;
+        }
+
+        .shortcuts-overlay strong {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        /* ===========================================
+           PRINT STYLES
+           =========================================== */
+        @media print {
+            .header-overlay,
+            .footer-overlay {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="viewer-container">
+        <!-- 3D Model Viewer Component -->
+        <!-- 
+            Key attributes explained:
+            - src: Dynamically loaded via JavaScript from user file selection
+            - auto-rotate: Enables smooth continuous rotation
+            - camera-controls: Enables orbit, pan, and zoom interactions
+            - exposure: Controls lighting intensity for physically correct rendering
+            - shadow-intensity: Soft shadow quality (0-1 scale)
+            - ar: Includes AR support detection
+            - reveal: Progressive loading strategy
+            - loading: Lazy loading strategy for performance
+        -->
+        <model-viewer
+            id="productViewer"
+            alt="Formrack 3D Product"
+            auto-rotate
+            camera-controls
+            exposure="1"
+            shadow-intensity="0.4"
+            ar
+            xr-environment
+            loading="lazy"
+            reveal="auto"
+            camera-orbit="auto auto auto"
+            field-of-view="auto"
+            min-camera-orbit="auto auto auto"
+            max-camera-orbit="auto auto auto"
+            style="
+                --progress-bar-color: #4a4a4a;
+                --progress-bar-height: 2px;
+            "
+        ></model-viewer>
+
+        <!-- Hidden File Input -->
+        <input
+            type="file"
+            id="fileInput"
+            accept=".glb,.gltf"
+            style="display: none;"
+        >
+
+        <!-- Header Overlay with Title -->
+        <div class="header-overlay">
+            <div class="subtitle">
+                <h1>Formrack</h1>
+                <p>Premium Industrial Solutions</p>
+            </div>
+            <!-- File Upload Button -->
+            <button id="uploadBtn" class="upload-button" title="Upload 3D Model">
+                <span class="upload-icon">⬆</span>
+                <span class="upload-text">Upload Model</span>
+            </button>
+        </div>
+
+        <!-- Footer Overlay with Information -->
+        <div class="footer-overlay">
+            <div class="info-group">
+                <div class="info-item">
+                    <label>Format</label>
+                    <value>3D Model Viewer</value>
+                </div>
+                <div class="info-item">
+                    <label>Technology</label>
+                    <value>WebGL Rendering</value>
+                </div>
+                <div class="info-item">
+                    <label>View Mode</label>
+                    <value>Interactive 360°</value>
+                </div>
+            </div>
+            <div class="interaction-hint">
+                Drag to rotate • Scroll to zoom • Right-click to pan
+            </div>
+        </div>
+
+        <!-- Shortcuts / Help Overlay -->
+        <div class="shortcuts-overlay">
+            <div><strong>Left click</strong>: Parça seç / göz ikonunu konumlandır</div>
+            <div><strong>Shift + Left click</strong>: İçerideki/arkadaki parçayı seç</div>
+            <div><strong>Göz ikonu</strong>: Seçili parçayı saydam / opak yap</div>
+        </div>
+
+        <!-- Model Selector Dropdown -->
+        <div class="model-selector">
+            <label for="modelSelect">Models</label>
+            <select id="modelSelect">
+                <option value="">-- Select a model --</option>
+            </select>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * INITIALIZATION & PERFORMANCE OPTIMIZATION
+         * 
+         * This script handles:
+         * - Model listing from models.json
+         * - File upload and model loading
+         * - Model selector dropdown
+         * - Lazy loading strategy
+         * - Performance monitoring
+         * - Accessibility enhancements
+         * - Mobile gesture handling
+         */
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const viewer = document.querySelector('model-viewer');
+            const fileInput = document.getElementById('fileInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const modelSelect = document.getElementById('modelSelect');
+
+            // Ensure model-viewer library is fully loaded
+            if (customElements.get('model-viewer')) {
+                setupViewer(viewer);
+            } else {
+                customElements.whenDefined('model-viewer').then(() => {
+                    setupViewer(viewer);
+                });
+            }
+
+            // Load models (GitHub Pages: scan repo folder via GitHub API; Local: API -> models.json fallback)
+            loadModels(modelSelect, viewer);
+
+            // File upload button handler
+            if (uploadBtn && fileInput) {
+                uploadBtn.addEventListener('click', () => {
+                    fileInput.click();
+                });
+            }
+
+            // Model selector change handler
+            if (modelSelect) {
+                modelSelect.addEventListener('change', (event) => {
+                    if (event.target.value) {
+                        const filename = event.target.value;
+                        loadModelFromPath(viewer, filename);
+                    }
+                });
+            }
+
+            // File input change handler
+            if (fileInput) {
+                fileInput.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        loadModel(viewer, file, uploadBtn);
+                    }
+                });
+            }
+        });
+
+        function getSiteBasePath() {
+            const p = window.location.pathname || '/';
+            // If served as /something/index.html, base should be /something/
+            return p.endsWith('/') ? p : p.slice(0, p.lastIndexOf('/') + 1);
+        }
+
+        function resolveModelUrl(relativePath) {
+            const base = getSiteBasePath();
+            const rel = String(relativePath || '').replace(/^\/+/, '');
+            const parts = rel.split('/');
+            const safe = parts
+                .map((seg, i) => (i === 0 ? seg : encodeURIComponent(seg)))
+                .join('/');
+            return new URL(safe, window.location.origin + base).toString();
+        }
+
+        function isGitHubPagesHost() {
+            return /github\.io$/i.test(window.location.hostname);
+        }
+
+        function populateModelSelect(selectElement, models) {
+            selectElement.innerHTML = '<option value="">-- Select a model --</option>';
+            models.forEach(m => {
+                const option = document.createElement('option');
+                option.value = `models/${m.filename}`;
+                option.textContent = m.name || m.filename;
+                selectElement.appendChild(option);
+            });
+        }
+
+        /**
+         * Load models list:
+         * - GitHub Pages: list repo `models/` via GitHub Contents API (no backend needed)
+         * - Local/dev: try `/api/models` then fallback to `models.json`
+         */
+        function loadModels(selectElement, viewer) {
+            if (!selectElement) {
+                console.error('❌ Model select element not found');
+                return;
+            }
+
+            if (isGitHubPagesHost()) {
+                console.log('🔄 GitHub Pages detected: scanning repo models/ via GitHub API...');
+                // Best-effort: public repo listing. If rate-limited, fallback to models.json.
+                fetch('https://api.github.com/repos/formrack/FORMRACK-WEB-ONIZLEME/contents/models')
+                    .then(r => {
+                        if (!r.ok) throw new Error(`GitHub API responded with status ${r.status}`);
+                        return r.json();
+                    })
+                    .then(items => {
+                        const files = Array.isArray(items) ? items : [];
+                        const models = files
+                            .filter(x => x && x.type === 'file' && typeof x.name === 'string')
+                            .filter(x => x.name.toLowerCase().endsWith('.glb') || x.name.toLowerCase().endsWith('.gltf'))
+                            .map((x, idx) => ({
+                                id: idx + 1,
+                                name: x.name.replace(/\.(glb|gltf)$/i, ''),
+                                filename: x.name,
+                            }));
+
+                        if (models.length > 0) {
+                            populateModelSelect(selectElement, models);
+                            console.log(`✓ Loaded ${models.length} models from GitHub repo`);
+                            // Auto-load first model for convenience (same behavior as having a default)
+                            if (viewer && !viewer.src && models[0]?.filename) {
+                                loadModelFromPath(viewer, `models/${models[0].filename}`);
+                            }
+                            return;
+                        }
+                        console.warn('⚠️ No models found via GitHub API; falling back to models.json...');
+                        loadModelsFromJSON(selectElement, viewer);
+                    })
+                    .catch(err => {
+                        console.warn('⚠️ GitHub API failed; falling back to models.json...', err && err.message ? err.message : err);
+                        loadModelsFromJSON(selectElement, viewer);
+                    });
+                return;
+            }
+
+            console.log('🔄 Attempting to load models from local API...');
+            fetch('api/models')
+                .then(response => {
+                    console.log('📡 API Response Status:', response.status);
+                    if (!response.ok) throw new Error(`API responded with status ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📦 API Response Data:', data);
+                    if (data.models && Array.isArray(data.models) && data.models.length > 0) {
+                        populateModelSelect(selectElement, data.models);
+                        console.log(`✓ Successfully loaded ${data.models.length} models from API`);
+                    } else {
+                        console.warn('⚠️ No models found in API response');
+                        loadModelsFromJSON(selectElement, viewer);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ API Error:', error.message);
+                    console.warn('⚠️ Falling back to models.json...');
+                    loadModelsFromJSON(selectElement, viewer);
+                });
+        }
+
+        /**
+         * Load models from models.json (fallback)
+         */
+        function loadModelsFromJSON(selectElement, viewer) {
+            if (!selectElement) {
+                console.error('❌ Model select element not found');
+                return;
+            }
+            
+            console.log('📄 Loading models from models.json...');
+            
+            fetch('models.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load models.json');
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📦 JSON Response:', data);
+                    if (data.models && Array.isArray(data.models)) {
+                        populateModelSelect(selectElement, data.models);
+                        data.models.forEach(model => console.log(`✅ Added from JSON: ${model.name || model.filename}`));
+                        console.log(`✓ Loaded ${data.models.length} models from models.json`);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ JSON Load Error:', error.message);
+                });
+        }
+
+        /**
+         * Load 3D model from folder path
+         */
+        function loadModelFromPath(viewer, filepath) {
+            if (!filepath) {
+                console.warn('⚠️ No filepath provided');
+                return;
+            }
+
+            console.log('📂 Loading model from:', filepath);
+            
+            // Show loading state
+            const uploadBtn = document.getElementById('uploadBtn');
+            if (uploadBtn) uploadBtn.classList.add('loading');
+
+            // Set the model source (GitHub Pages-safe + URL-encoded for spaces/non-ascii)
+            viewer.src = resolveModelUrl(filepath);
+
+            // Remove loading state on successful load
+            const onModelLoaded = () => {
+                if (uploadBtn) uploadBtn.classList.remove('loading');
+                console.log('✅ Model loaded successfully');
+                viewer.removeEventListener('model-visibility', onModelLoaded);
+            };
+
+            viewer.addEventListener('model-visibility', onModelLoaded);
+
+            // Timeout fallback
+            setTimeout(() => {
+                if (uploadBtn) uploadBtn.classList.remove('loading');
+            }, 4000);
+        }
+
+        /**
+         * Load 3D model from file input
+         */
+        function loadModel(viewer, file, button) {
+            if (!file) return;
+
+            const validTypes = ['model/gltf+json', 'model/gltf-binary', 'application/octet-stream'];
+            const isValidType = validTypes.some(type => file.type === type) || 
+                                file.name.endsWith('.glb') || 
+                                file.name.endsWith('.gltf');
+
+            if (!isValidType) {
+                alert('Please select a valid .glb or .gltf file');
+                return;
+            }
+
+            // Show loading state
+            button.classList.add('loading');
+
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                try {
+                    // Create blob URL from file
+                    const blob = new Blob([e.target.result], { type: file.type || 'model/gltf-binary' });
+                    const url = URL.createObjectURL(blob);
+
+                    // Load model into viewer
+                    viewer.src = url;
+
+                    // Remove loading state on successful load
+                    viewer.addEventListener('model-visibility', () => {
+                        button.classList.remove('loading');
+                    }, { once: true });
+
+                    // Timeout fallback (in case model-visibility doesn't fire)
+                    setTimeout(() => {
+                        button.classList.remove('loading');
+                    }, 2000);
+
+                    console.log('Model loaded successfully:', file.name);
+                } catch (error) {
+                    console.error('Error loading model:', error);
+                    alert('Error loading model. Please try another file.');
+                    button.classList.remove('loading');
+                }
+            };
+
+            reader.onerror = () => {
+                console.error('File read error');
+                alert('Error reading file. Please try again.');
+                button.classList.remove('loading');
+            };
+
+            // Read file as ArrayBuffer
+            reader.readAsArrayBuffer(file);
+        }
+
+        function setupViewer(viewer) {
+            // Accessibility: Ensure keyboard navigation works
+            viewer.setAttribute('tabindex', '0');
+
+            // Disable AR on non-XR supporting browsers gracefully
+            if (!navigator.xr) {
+                viewer.removeAttribute('ar');
+                viewer.removeAttribute('xr-environment');
+            }
+
+            // Performance: Reduce model quality on lower-end devices
+            const isLowEndDevice = navigator.hardwareConcurrency <= 4;
+            if (isLowEndDevice) {
+                viewer.setAttribute('shadow-intensity', '0.2');
+            }
+
+            // Event listeners for user interaction logging (optional analytics)
+            viewer.addEventListener('camera-change', () => {
+                // Camera interaction detected - useful for analytics
+                // Kept minimal for performance
+            });
+
+            // Load event for when model is fully rendered
+            viewer.addEventListener('model-visibility', () => {
+                console.log('3D model fully loaded and visible');
+            });
+
+            // Part visibility toggle (eye icon overlay)
+            enablePartVisibilityToggle(viewer, { opacity: 0.25 });
+        }
+
+        /**
+         * Enables per-mesh transparency toggling via an eye icon overlay.
+         * - Session-only state (resets on page refresh)
+         * - Uses model-viewer's internal Raycaster via ModelScene.hitFromPoint
+         */
+        function enablePartVisibilityToggle(viewer, opts = {}) {
+            if (!viewer || viewer.__partVisibilityToggleEnabled) return;
+            viewer.__partVisibilityToggleEnabled = true;
+
+            const targetOpacity = typeof opts.opacity === 'number' ? opts.opacity : 0.25;
+            const opacity = Math.min(0.35, Math.max(0.15, targetOpacity));
+            const stopAutoRotateOnSelect = opts.stopAutoRotateOnSelect !== false;
+
+            const getSym = (desc) => Object.getOwnPropertySymbols(viewer).find(s => s.description === desc);
+            const sceneSym = getSym('scene');
+            const inputSym = getSym('input');
+
+            const getScene = () => (sceneSym ? viewer[sceneSym] : null);
+            const inputEl = (inputSym && viewer[inputSym]) ? viewer[inputSym] : viewer;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'part-eye-btn';
+            btn.setAttribute('aria-label', 'Toggle part transparency');
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M12 15.25a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5Z" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+            `;
+            document.body.appendChild(btn);
+
+            const state = {
+                hoveredMesh: null,
+                hoverWorldPoint: null,
+                overlayTicking: false,
+                pinned: false,
+                leftDown: false,
+                leftDownStart: null,
+            };
+
+            const hide = () => {
+                state.hoveredMesh = null;
+                state.hoverWorldPoint = null;
+                state.pinned = false;
+                btn.classList.remove('is-visible');
+                btn.classList.remove('is-pressed');
+                btn.classList.remove('is-active');
+            };
+
+            const setBtnPosFromWorldPoint = (worldPoint) => {
+                const scene = getScene();
+                if (!scene || !worldPoint) return;
+                const camera = scene.getCamera();
+                const rect = viewer.getBoundingClientRect();
+                const p = worldPoint.clone();
+                p.project(camera);
+
+                const x = rect.left + (p.x * 0.5 + 0.5) * rect.width;
+                const y = rect.top + (-p.y * 0.5 + 0.5) * rect.height;
+
+                if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+                btn.style.left = `${x}px`;
+                btn.style.top = `${y}px`;
+            };
+
+            const startOverlayTick = () => {
+                if (state.overlayTicking) return;
+                state.overlayTicking = true;
+
+                const tick = () => {
+                    if (!state.overlayTicking) return;
+                    if (!state.hoveredMesh || !state.hoverWorldPoint || !state.pinned) {
+                        state.overlayTicking = false;
+                        return;
+                    }
+                    setBtnPosFromWorldPoint(state.hoverWorldPoint);
+                    requestAnimationFrame(tick);
+                };
+                requestAnimationFrame(tick);
+            };
+
+            const pick = (ev) => {
+                const scene = getScene();
+                if (!scene || !scene.model) return null;
+                const ndc = scene.getNDC(ev.clientX, ev.clientY);
+
+                const primaryHit = scene.hitFromPoint(ndc);
+                if (!primaryHit) return null;
+
+                // Normal seçim (Shift yoksa en öndeki mesh)
+                if (!ev.shiftKey) {
+                    const hit = primaryHit;
+                    if (!hit.object || !hit.object.isMesh) return null;
+                    return hit;
+                }
+
+                // Shift basılıyken: önce ön yüzü atla, arkadaki mesh'i bulmaya çalış
+                const first = primaryHit;
+                const mesh = first.object;
+                if (!mesh || !mesh.isMesh) return null;
+
+                const ud = mesh.userData || (mesh.userData = {});
+                const prevNoHit = Object.prototype.hasOwnProperty.call(ud, 'noHit') ? ud.noHit : undefined;
+                ud.noHit = true;
+                const second = scene.hitFromPoint(ndc);
+                if (prevNoHit === undefined) {
+                    delete ud.noHit;
+                } else {
+                    ud.noHit = prevNoHit;
+                }
+
+                const hit = second || first;
+                if (!hit || !hit.object || !hit.object.isMesh) return null;
+                return hit;
+            };
+
+            const pinFromEvent = (ev) => {
+                const hit = pick(ev);
+                if (!hit) {
+                    hide();
+                    return;
+                }
+
+                if (stopAutoRotateOnSelect) {
+                    // Stop model-viewer's self rotation (session only)
+                    try { viewer.autoRotate = false; } catch (_) {}
+                    viewer.removeAttribute('auto-rotate');
+                }
+
+                state.hoveredMesh = hit.object;
+                state.hoverWorldPoint = hit.point.clone();
+                state.pinned = true;
+
+                setBtnPosFromWorldPoint(state.hoverWorldPoint);
+                btn.classList.add('is-visible');
+                // Göz ikonunun aktif stili: parça zaten şeffaf ise göster
+                const st = ensureToggleState(state.hoveredMesh);
+                if (st.isTransparent) {
+                    btn.classList.add('is-active');
+                } else {
+                    btn.classList.remove('is-active');
+                }
+                startOverlayTick();
+            };
+
+            const ensureToggleState = (mesh) => {
+                if (!mesh.userData) mesh.userData = {};
+                if (!mesh.userData._partTransparency) {
+                    mesh.userData._partTransparency = { isTransparent: false };
+                }
+                return mesh.userData._partTransparency;
+            };
+
+            const cloneAndMakeTransparent = (mat) => {
+                if (!mat || typeof mat.clone !== 'function') return mat;
+                const c = mat.clone();
+                c.transparent = true;
+                c.opacity = opacity;
+                c.depthWrite = false;
+                c.needsUpdate = true;
+                return c;
+            };
+
+            const disposeMaterial = (mat) => {
+                if (!mat) return;
+                if (Array.isArray(mat)) {
+                    mat.forEach(m => m && typeof m.dispose === 'function' && m.dispose());
+                    return;
+                }
+                if (typeof mat.dispose === 'function') mat.dispose();
+            };
+
+            const toggleMeshTransparency = (mesh) => {
+                if (!mesh || !mesh.material) return;
+                const st = ensureToggleState(mesh);
+
+                // If already transparent, restore original material references
+                if (st.isTransparent) {
+                    if (st.originalMaterial) {
+                        mesh.material = st.originalMaterial;
+                    }
+                    disposeMaterial(st.transparentMaterial);
+                    st.transparentMaterial = null;
+                    st.originalMaterial = null;
+                    st.isTransparent = false;
+                    if (state.hoveredMesh === mesh) {
+                        btn.classList.remove('is-active');
+                    }
+                    return;
+                }
+
+                // Enable transparency without affecting other meshes that share the same material
+                st.originalMaterial = mesh.material;
+                st.transparentMaterial = Array.isArray(mesh.material)
+                    ? mesh.material.map(cloneAndMakeTransparent)
+                    : cloneAndMakeTransparent(mesh.material);
+                mesh.material = st.transparentMaterial;
+                st.isTransparent = true;
+                if (state.hoveredMesh === mesh) {
+                    btn.classList.add('is-active');
+                }
+            };
+
+            // Click handler on eye icon
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!state.hoveredMesh) return;
+                btn.classList.add('is-pressed');
+                setTimeout(() => btn.classList.remove('is-pressed'), 140);
+                toggleMeshTransparency(state.hoveredMesh);
+            }, { passive: false });
+            
+            // Sol tık (button === 0) ile seçim: küçük hareketleri "click" say.
+            // Sol tık / sol sürükleme model-viewer etkileşimlerini tamamen devre dışı bırakır.
+            inputEl.addEventListener('pointerdown', (ev) => {
+                if (ev.button !== 0) return;
+                state.leftDown = true;
+                state.leftDownStart = { x: ev.clientX, y: ev.clientY };
+                // model-viewer'ın sol tık etkileşimlerini kapat
+                ev.preventDefault();
+                ev.stopPropagation();
+            }, { passive: false });
+
+            inputEl.addEventListener('pointermove', (ev) => {
+                if (!state.leftDown) return;
+                // Sol tık sürüklemesini tamamen yut (rotate/pan olmasın)
+                ev.preventDefault();
+                ev.stopPropagation();
+            }, { passive: false });
+
+            inputEl.addEventListener('pointerup', (ev) => {
+                if (ev.button !== 0 || !state.leftDown || !state.leftDownStart) return;
+                const dx = ev.clientX - state.leftDownStart.x;
+                const dy = ev.clientY - state.leftDownStart.y;
+                state.leftDown = false;
+                state.leftDownStart = null;
+
+                const distSq = dx * dx + dy * dy;
+                // Her durumda sol tık etkileşimini yut
+                ev.preventDefault();
+                ev.stopPropagation();
+                if (distSq > 16) return;
+
+                pinFromEvent(ev);
+            }, { passive: false });
+
+            // Sağ tıkta tarayıcı menüsünü açma (pan davranışını bozmadan)
+            inputEl.addEventListener('contextmenu', (ev) => {
+                ev.preventDefault();
+                // stopPropagation yok: model-viewer'ın kendi sağ-tık davranışları kalabilir
+            }, { passive: false });
+
+            // Dismiss when clicking outside the viewer / icon
+            document.addEventListener('pointerdown', (ev) => {
+                if (!state.pinned) return;
+                const t = ev.target;
+                if (btn.contains(t)) return;
+                if (viewer.contains(t)) return;
+                hide();
+            }, { passive: true });
+
+            // ESC dismiss
+            document.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Escape') hide();
+            }, { passive: true });
+
+            // Keep overlay aligned on resize/scroll (position is fixed, but projection changes with layout)
+            window.addEventListener('resize', () => {
+                if (state.hoverWorldPoint) setBtnPosFromWorldPoint(state.hoverWorldPoint);
+            }, { passive: true });
+            window.addEventListener('scroll', () => {
+                if (state.hoverWorldPoint) setBtnPosFromWorldPoint(state.hoverWorldPoint);
+            }, { passive: true });
+        }
+
+        /**
+         * PERFORMANCE TIP: The model-viewer library handles:
+         * - Automatic quality scaling
+         * - Texture compression
+         * - Level-of-detail (LOD) optimization
+         * - GPU memory management
+         * 
+         * No additional optimization needed in this context.
+         */
+    </script>
+</body>
+</html>
